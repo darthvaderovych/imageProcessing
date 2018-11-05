@@ -40,23 +40,60 @@ const server = http.createServer((req, res) => {
                         return db.db('image-test').collection('images').insertOne(imgObj)
                     }).then(() => { 
                        return _db.close();
-                    }).then(res.end(pug.renderFile('./templates/index.pug'))).catch((err) => {
+                    }).then(() => {
+                        res.writeHead(302, {'Location': '/'});
+                        res.end();
+                    }).catch((err) => {
                         console.error(err);
+                        res.writeHead(302, {'Location': '/'});
+                        res.end();
                     });
                 
-                // loadImage(imgUrl).then(res.end(pug.renderFile('./templates/index.pug'))).catch((err) => {
-                //     console.error(err);
-                // });
-            });
+            }); 
 
         }
     };
 
     if (req.method === 'GET') {
         if (pathname === '/') {
-            res.writeHead(200)
-            res.end(pug.renderFile('./templates/index.pug'));
-        }
+            let _db;
+            mongoClient.connect(mongoUrl, {useNewUrlParser: true})
+                .then((db) => {
+                    _db = db;
+                    return db.db('image-test').collection('images').find().toArray()
+                }).then((result) => {
+                    console.log(result);
+                    res.end(pug.renderFile('./templates/index.pug', {images: result}))
+                })
+            return;
+        };
+        let filePath = path.join(config.get('imagesRoot'), pathname);
+
+        let mime = {
+            html: 'text/html',
+            txt: 'text/plain',
+            css: 'text/css',
+            gif: 'image/gif',
+            jpg: 'image/jpeg',
+            png: 'image/png',
+            svg: 'image/svg+xml',
+            js: 'application/javascript'
+        };
+
+                
+        let type = mime[path.extname(filePath).slice(1)] || 'text/plain';
+
+        let fileStream = fs.createReadStream(filePath);
+
+        fileStream.on('open', () => {
+            res.writeHead(200, {'Content-Type': type});
+            fileStream.pipe(res);
+        });
+
+        fileStream.on('error', (err) => {
+            res.writeHead(404, {'Content-Type': 'text/plain'});
+            return res.end('Not found');
+        })
     }
 
 });

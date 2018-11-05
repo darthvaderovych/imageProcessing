@@ -10,12 +10,21 @@ html(lang='en')
     .container
         .row
             .col-md-6.m-auto
-                h1.text-center.display-4.my-4 Put Your image here
+                h1.text-center.my-3 Put Your image here
                 form(action='/', method='post')
                     .form-group
                         label(for='url') URL:
                         input#url(type='url', name='url').form-control
-                    button.btn.btn-primary.btn-block(type='submit') Submit
+                    button.btn.btn-secondary.btn-block(type='submit') Submit
+    
+    .container
+        .row
+            each image in images
+                .col-md-4.col-sm-6
+                    .card.border-dark.my-4
+                        img.card-img-top(src=image.name)
+                        .card-footer(style='overflow: auto')
+                            h5.card-title #{image.name}
 
     script(src='https://code.jquery.com/jquery-3.3.1.slim.min.js', integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo', crossorigin='anonymous')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js', integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49', crossorigin='anonymous')
