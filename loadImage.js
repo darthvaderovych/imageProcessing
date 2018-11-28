@@ -1,11 +1,10 @@
+const http = require('http');
+const https = require('https');
 const url = require('url');
 const path = require('path');
 const config = require('config');
 const fs = require('fs');
-const http = require('http');
 const sharp = require('sharp');
-
-
 
 
 const loadImage = (imgUrl) => {
@@ -20,7 +19,13 @@ const loadImage = (imgUrl) => {
 
         let imgResize = sharp().resize(1334, 750);
 
-        http.get(imgUrl, (imgRes) => {
+        let httpLib = http;
+
+        if(/^https/.test(imgUrl)) {
+            httpLib = https;
+        }
+
+        httpLib.get(imgUrl, (imgRes) => {
             if(imgRes.headers['content-length'] > config.get('limitFileSize')) {
                 writeStream.destroy();
                 fs.unlink(imgPath, (error) => { });
@@ -29,7 +34,6 @@ const loadImage = (imgUrl) => {
 
             imgRes.on('data', (chunk) => {
                 size += chunk.length;
-                console.log(size);
         
                 if (size > config.get('limitFileSize')) {
                     writeStream.destroy();
@@ -59,18 +63,7 @@ const loadImage = (imgUrl) => {
                 if (err) {
                     reject(new Error('Image was not saved'));
                 } else {
-                    resolve();
-                    // let _db;
-                    // mongoClient.connect(mongoUrl, {useNewUrlParser: true})
-                    // .then((db) => {
-                    //     _db = db;
-                    //     return db.db('image-test').collection('images').insertOne(imgObj)
-                    // }).then(() => { 
-                    //     _db.close();
-                    // }).catch((err) => {
-                    //     console.error(err);
-                    // });
-                    
+                    resolve();              
                 }
             })
         });
